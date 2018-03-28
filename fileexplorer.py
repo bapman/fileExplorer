@@ -23,7 +23,6 @@ def showMenu():
 	print "l:  splits a large file into multiple smaller ones"
 	print "f:  filters only rows where a dimension matches a value ('fx' for regexp)"
 	print "z:  prints the name of the current file being worked on"
-	print "v:  toggles verbose mode on/off"
 	print "p:  toggles printing to a file versus printing to console" 
 	print "q:  closes / quits the program"
 	print ""
@@ -62,32 +61,27 @@ def showTailRows():
 def showExampleSampleRows():
 	global nSampleRows, fileNumLines
 	nSampleRows = getNumberfromUser("Number of sample rows requested", nSampleRows)
-	lineCounter = 0
-	selectedRowList = []
 	initializeOutputFile()
 	sourceFile = open(inputFileName, "r")
-	# first fill the array with the first lines of the file
-	for line in sourceFile:
-		lineCounter += 1
-		if probability(lineCounter, nSampleRows):
-			if len(selectedRowList) >= nSampleRows:
-				random.shuffle(selectedRowList)
-				selectedRowList.pop()
-			if verboseMode:
-				line = "line " + "{:,}".format(lineCounter) + ": " + line
-			selectedRowList.append(line)
-	sourceFile.close()
-	fileNumLines = lineCounter
+	# excluding the header, create an array of rows that will be selected
+	selectedRowsArray = random.sample(range(2, numLines()-1), nSampleRows)
+	selectedRowsArray.sort()
 	# get the first line
 	with open(inputFileName, 'r') as sourceFile:
 		outputString(sourceFile.readline())
     # print out the rest
-	for i in range(0, len(selectedRowList)):
-		outputString(selectedRowList[i])
+	j = 0
+	i = 0
+	sourceFile = open(inputFileName, "r")
+	for line in sourceFile:
+		if i == selectedRowsArray[j]:
+			outputString(line)
+			j++
+			# break if we reached end of selected rows
+			if j > len(selectedRowsArray):
+				break
+		i++
 	closeOutputFile()
-
-def probability(invThreshold, booster):
-    return random.random() <= float(1)/float(invThreshold)*float(booster)
 
 def numLines():
 	global fileNumLines
@@ -120,8 +114,6 @@ def checkDimensions():
 		# final operations before ending loop
 		if lineCounter == 1:
 			headerDimensions = lineDim
-		if verboseMode:
-			outputString("line " + str(lineCounter) + ": " + str(lineDim))
 		if lineCounter == nSampleRows:
 			break
 	# print out results
@@ -155,8 +147,6 @@ def cleanUpDimensions():
 				outputString(line)
 		else:
 			changedLines += 1
-			if verboseMode:
-				print(">> Eliminating row # " + "{:,}".format(lineCounter))
 		if lineCounter == nSampleRows:
 			break
 	# finished the iteration
@@ -227,17 +217,9 @@ def replaceRegExpOrString(regExpFlag):
 				newLine = regExp.sub(newRegexp, line)
 			else:
 				newLine = line.replace(oldRegexp, newRegexp)
-			if verboseMode:
-				# in exploration mode, only print out the lines that have changed
-				if newLine != line:
-					outputString("Modified from: " + line)
-					outputString("Modified to:   " + newLine)
-					outputString("-------------")
-					counter += 1
-			else:
-				outputString(newLine)
-				if newLine != line:
-					counter += 1
+			outputString(newLine)
+			if newLine != line:
+				counter += 1
 			if counter == nSampleRows:
 				sourceFile.close()
 				closeOutputFile()
@@ -278,10 +260,7 @@ def scanFileForRegExpOrString(regExpFlag):
 				found = True
 		if found:
 			counter += 1
-			if verboseMode:
-				outputString("Line " + str(lineCounter) + " --> " + line)
-			else:
-				outputString(line)
+			outputString(line)
 			if counter == nSampleRows:
 				sourceFile.close()
 				closeOutputFile()
@@ -324,10 +303,7 @@ def filterRows(regExpFlag):
 				found = True
 		if found:
 			counter += 1
-			if verboseMode:
-				outputString("Line " + str(lineCounter) + " --> Value " + rowColumnValue + " --> " + line)
-			else:
-				outputString(line)
+			outputString(line)
 			if counter == nSampleRows:
 				sourceFile.close()
 				closeOutputFile()
@@ -344,6 +320,8 @@ def getColumnNumber(headerLine, separatorStr):
 	headerArr = headerLine.split(separatorStr)
 	try:
 		colIndex = int(strInput)
+		# remove 1 to make it translatable to the array
+		colIndex = colIndex - 1
 		# user provided a number
 		if len(headerArr) > colIndex:
 			print "Selected column: " + headerArr[colIndex]
@@ -375,7 +353,7 @@ def getNumberfromUser(strRequest, defaultValue):
 		return 10
 
 def getSourceFileName():
-	global futureFileExt, futureFileMain, fileNumLines, verboseMode, printToConsole, nSampleRows
+	global futureFileExt, futureFileMain, fileNumLines, printToConsole, nSampleRows
 	fileNumLines = -1
 	print "Available files found in folder for selection:"
 	listFilesInFolder(-1)
@@ -390,11 +368,10 @@ def getSourceFileName():
 	try:
 		source = open(iFileName, "r")
 		source.close()
-		verboseMode = True
 		printToConsole = True
 		nSampleRows = 10
 		print ">> Found file " + iFileName
-		print ">> Defaulting to verbose-mode and console-print (select v or p to toggle)"
+		print ">> Defaulting to console-print (select p to toggle)"
 		print ">> Type \"m\" for menu if you are unsure which functions are availble."
 		# extract the file extension and main file name for potential later re-use
 		tempStr = iFileName.split(".")
@@ -453,10 +430,9 @@ def closeOutputFile():
 # -----------------------------------------------------------------------------
 
 # initialize overall variables
-version = "1.1"
+version = "1.2"
 usrInput = ""
 outputFile = None
-verboseMode = True
 printToConsole = True
 futureFileExt = "txt"
 futureFileMain = ""
@@ -470,7 +446,7 @@ nSampleRows = 10
 # prepare the main filename regexp to identify if this one of our files
 fileNameRegExp = re.compile("[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9][0-9][0-9][0-9][0-9] - ")
 
-print "This is version " + version + " of the swiss army knife for large file exploation (by bap)"
+print "This is version " + version + " of the file explorer for large file exploation (by bap)"
 print ""
 # get a valid file name
 inputFileName = getSourceFileName()
@@ -515,9 +491,6 @@ while usrInput != "q":
 		tmpFileName = getSourceFileName()
 		if tmpFileName != "":
 			inputFileName = tmpFileName
-	elif usrInput == "v":
-		verboseMode = not(verboseMode)
-		print ">> Verbose mode set to " + str(verboseMode)
 	elif usrInput == "p":
 		printToConsole = not(printToConsole)
 		if printToConsole:
