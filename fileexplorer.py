@@ -66,7 +66,6 @@ def showExampleSampleRows():
 	# excluding the header, create an array of rows that will be selected
 	selectedRowsArray = random.sample(range(2, numLines()-1), nSampleRows)
 	selectedRowsArray.sort()
-	print(selectedRowsArray)
 	# get the first line
 	with open(inputFileName, 'r') as sourceFile:
 		outputString(sourceFile.readline())
