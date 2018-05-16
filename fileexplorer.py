@@ -4,33 +4,33 @@ import datetime
 import re
 import sys
 import math
-import Queue
+#import Queue
 import random
 
 def showMenu():
-	print ""
-	print "Menu:"
-	print "m:  shows this menu"
-	print "h:  shows the header (first) rows of the file"
-	print "t:  shows the tail (last) rows of the file"
-	print "e:  shows sample example rows selected randomly in the file"
-	print "r:  replaces one string with another ('rx' does the same for regexps)"
-	print "c:  toggles the source file"
-	print "s:  scans file for a string and prints lines where found ('sx' for regexps)"
-	print "d:  checks the dimensions (data columns) row-by-row given a separator"
-	print "dx: removes all rows that don't have the right number of dimensions"
-	print "n:  gives the number of rows in a file"
-	print "l:  splits a large file into multiple smaller ones"
-	print "f:  filters only rows where a dimension matches a value ('fx' for regexp)"
-	print "z:  prints the name of the current file being worked on"
-	print "p:  toggles printing to a file versus printing to console" 
-	print "q:  closes / quits the program"
-	print ""
-	print "General utilization tips:"
-	print "The input files need to be in the same folder where this program is executed."
-	print "If you to iterate through the entire file, enter a negative number (e.g. -1)"
-	print "when a sample number is requested"
-	print ""
+	print("")
+	print("Menu:")
+	print("m:  shows this menu")
+	print("h:  shows the header (first) rows of the file")
+	print("t:  shows the tail (last) rows of the file")
+	print("e:  shows sample example rows selected randomly in the file")
+	print("r:  replaces one string with another ('rx' does the same for regexps)")
+	print("c:  toggles the source file")
+	print("s:  scans file for a string and prints lines where found ('sx' for regexps)")
+	print("d:  checks the dimensions (data columns) row-by-row given a separator")
+	print("dx: removes all rows that don't have the right number of dimensions")
+	print("n:  gives the number of rows in a file")
+	print("l:  splits a large file into multiple smaller ones")
+	print("f:  filters only rows where a dimension matches a value ('fx' for regexp)")
+	print("z:  prints the name of the current file being worked on")
+	print("p:  toggles printing to a file versus printing to console" )
+	print("q:  closes / quits the program")
+	print("")
+	print("General utilization tips:")
+	print("The input files need to be in the same folder where this program is executed.")
+	print("If you to iterate through the entire file, enter a negative number (e.g. -1)")
+	print("when a sample number is requested")
+	print("")
 
 def showHeaderRows():
 	global nSampleRows
@@ -66,6 +66,7 @@ def showExampleSampleRows():
 	# excluding the header, create an array of rows that will be selected
 	selectedRowsArray = random.sample(range(2, numLines()-1), nSampleRows)
 	selectedRowsArray.sort()
+	print(selectedRowsArray)
 	# get the first line
 	with open(inputFileName, 'r') as sourceFile:
 		outputString(sourceFile.readline())
@@ -76,11 +77,11 @@ def showExampleSampleRows():
 	for line in sourceFile:
 		if i == selectedRowsArray[j]:
 			outputString(line)
-			j++
+			j += 1
 			# break if we reached end of selected rows
-			if j > len(selectedRowsArray):
+			if j == len(selectedRowsArray):
 				break
-		i++
+		i += 1
 	closeOutputFile()
 
 def numLines():
@@ -90,12 +91,12 @@ def numLines():
 			for i, l in enumerate(f):
 				pass
 		fileNumLines = i + 1
-	print ">> File has " + "{:,}".format(fileNumLines) + " lines"
+	print(">> File has " + "{:,}".format(fileNumLines) + " lines")
 	return fileNumLines
 
 def checkDimensions():
 	global lastSeparator, nSampleRows
-	lastSeparator = raw_input("Provide the separator[" + lastSeparator + "]: ") or lastSeparator
+	lastSeparator = input("Provide the separator[" + lastSeparator + "]: ") or lastSeparator
 	nSampleRows = getNumberfromUser("Number of sample rows requested", nSampleRows)
 	# start the main iteration
 	sourceFile = open(inputFileName, "r")
@@ -126,14 +127,14 @@ def checkDimensions():
 
 def cleanUpDimensions():
 	global lastSeparator, nSampleRows
-	lastSeparator = raw_input("Provide the separator[" + lastSeparator + "]: ") or lastSeparator
+	lastSeparator = input("Provide the separator[" + lastSeparator + "]: ") or lastSeparator
 	# get the number of dimensions from the header
 	sourceFile = open(inputFileName, "r")
 	firstline = sourceFile.readline()
 	numDimensions = len(firstline.split(lastSeparator))
 	sourceFile.close()
 	# now we can continue querying for correct dimension number and sample rows
-	numDimensions = raw_input("Provide the correct number of dimensions[" + str(numDimensions) + "]: ") or numDimensions
+	numDimensions = input("Provide the correct number of dimensions[" + str(numDimensions) + "]: ") or numDimensions
 	nSampleRows = getNumberfromUser("Number of sample rows requested", nSampleRows)
 	# start the main iteration
 	sourceFile = open(inputFileName, "r")
@@ -150,15 +151,15 @@ def cleanUpDimensions():
 		if lineCounter == nSampleRows:
 			break
 	# finished the iteration
-	print ">> Finished parsing " +  "{:,}".format(lineCounter) + " lines from file"
-	print ">> Made " +  "{:,}".format(changedLines) + " line deletions"
+	print(">> Finished parsing " +  "{:,}".format(lineCounter) + " lines from file")
+	print(">> Made " +  "{:,}".format(changedLines) + " line deletions")
 	sourceFile.close()
 	closeOutputFile()
 
 def splitFile():
 	fNumLines = numLines()
 	numFileSplits = getNumberfromUser("Define amount of splits required", 10)
-	keepHeader = raw_input("Keep header (Y/n): ") or "y"
+	keepHeader = input("Keep header (Y/n): ") or "y"
 	# open file and extract first line if required
 	source = open(inputFileName, "r")
 	firstLine = ""
@@ -184,7 +185,7 @@ def splitFile():
 		if fileLineCounter >= newNumLines:
 			# we need to create a new file, close the old one and reinitialize the fileLineCounter
 			copy.close()
-			print ">> Generated file part # " + str(fileCounter)
+			print(">> Generated file part # " + str(fileCounter))
 			fileCounter += 1
 			fileLineCounter = 0
 			copy = open(futureFileMain + "_part_" + str(fileCounter) + "." + futureFileExt, "wt")
@@ -193,7 +194,7 @@ def splitFile():
 		else:
 			if keepHeader == 1:
 				copy.write(str(firstline))
-	print ">> Generated file part # " + str(fileCounter)
+	print(">> Generated file part # " + str(fileCounter))
 
 def replaceRegExpOrString(regExpFlag):
 	global oldRegexp, nSampleRows, fileNumLines
@@ -201,10 +202,10 @@ def replaceRegExpOrString(regExpFlag):
 	replaceThing = "string"
 	if regExpFlag:
 		replaceThing = "regexp"
-		print ">> Note that parentheses will create groups that you can later reference with backslash number (e.g. \\1)"
+		print(">> Note that parentheses will create groups that you can later reference with backslash number (e.g. \\1)")
 	try:
-		oldRegexp = raw_input("Old " + replaceThing + " to be replaced [ "+ oldRegexp +" ]: ") or oldRegexp
-		newRegexp = raw_input("New " + replaceThing + " to replace old (e.g. .\\1\\2 ): ")
+		oldRegexp = input("Old " + replaceThing + " to be replaced [ "+ oldRegexp +" ]: ") or oldRegexp
+		newRegexp = input("New " + replaceThing + " to replace old (e.g. .\\1\\2 ): ")
 		counter = 0
 		lineCounter = 0
 		initializeOutputFile()
@@ -224,7 +225,7 @@ def replaceRegExpOrString(regExpFlag):
 				sourceFile.close()
 				closeOutputFile()
 				return
-		print ">> Finished parsing file with " +  "{:,}".format(lineCounter) + " lines"
+		print(">> Finished parsing file with " +  "{:,}".format(lineCounter) + " lines")
 		fileNumLines = lineCounter
 	except:
 		print(">> Unexpected error:", sys.exc_info()[0])
@@ -237,7 +238,7 @@ def scanFileForRegExpOrString(regExpFlag):
 	replaceThing = "string"
 	if regExpFlag:
 		replaceThing = "regexp"
-	oldRegexp = raw_input("Scan the file for this " + replaceThing + "[ "+ oldRegexp +" ]:") or oldRegexp
+	oldRegexp = input("Scan the file for this " + replaceThing + "[ "+ oldRegexp +" ]:") or oldRegexp
 	counter = 0
 	lineCounter = 0
 	initializeOutputFile()
@@ -267,7 +268,7 @@ def scanFileForRegExpOrString(regExpFlag):
 				return
 	sourceFile.close()
 	closeOutputFile()
-	print ">> Finished parsing file with " +  "{:,}".format(lineCounter) + " lines"
+	print(">> Finished parsing file with " +  "{:,}".format(lineCounter) + " lines")
 	fileNumLines = lineCounter
 
 def filterRows(regExpFlag):
@@ -276,12 +277,12 @@ def filterRows(regExpFlag):
 	filterThing = "string"
 	if regExpFlag:
 		filterThing = "regexp"
-	oldRegexp = raw_input("Filter the file for this " + filterThing + "[ "+ oldRegexp +" ]:") or oldRegexp
+	oldRegexp = input("Filter the file for this " + filterThing + "[ "+ oldRegexp +" ]:") or oldRegexp
 	counter = 0
 	lineCounter = 0
 	initializeOutputFile()
 	# get the number of dimensions from the header
-	lastSeparator = raw_input("Provide the separator[" + lastSeparator + "]: ") or lastSeparator
+	lastSeparator = input("Provide the separator[" + lastSeparator + "]: ") or lastSeparator
 	sourceFile = open(inputFileName, "r")
 	firstline = sourceFile.readline()
 	colNum = getColumnNumber(firstline, lastSeparator)
@@ -316,7 +317,7 @@ def filterRows(regExpFlag):
 # -----------------------------------------------------------------------------
 
 def getColumnNumber(headerLine, separatorStr):
-	strInput = raw_input("Provide the column name or number: ")
+	strInput = input("Provide the column name or number: ")
 	headerArr = headerLine.split(separatorStr)
 	try:
 		colIndex = int(strInput)
@@ -324,19 +325,19 @@ def getColumnNumber(headerLine, separatorStr):
 		colIndex = colIndex - 1
 		# user provided a number
 		if len(headerArr) > colIndex:
-			print "Selected column: " + headerArr[colIndex]
+			print("Selected column: " + headerArr[colIndex])
 			return colIndex
 		else: 
-			print "Error, identifier too high for length of header"
+			print("Error, identifier too high for length of header")
 			return -1
 	except ValueError:
 		colIndex = -1
 		for i in range(0, len(headerArr)):
 			if headerArr[i] == strInput:
-				print "Found column " + headerArr[i] + " at position " + str(i)
+				print("Found column " + headerArr[i] + " at position " + str(i))
 				colIndex = i
 		if colIndex == -1:
-			print "Error, column name not found"
+			print("Error, column name not found")
 		return colIndex
 
 def getRowColumnValue(rowStr, separatorStr, colNum):
@@ -344,21 +345,21 @@ def getRowColumnValue(rowStr, separatorStr, colNum):
 	return lineDims[colNum]
 
 def getNumberfromUser(strRequest, defaultValue):
-	strNum = raw_input(strRequest + "[" + str(defaultValue) + "]: ") or str(defaultValue)
+	strNum = input(strRequest + "[" + str(defaultValue) + "]: ") or str(defaultValue)
 	try:
 		num = int(strNum)
 		return num
 	except ValueError:
-		print ">> Didn't provide a number, defaulting to 10"
+		print(">> Didn't provide a number, defaulting to 10")
 		return 10
 
 def getSourceFileName():
 	global futureFileExt, futureFileMain, fileNumLines, printToConsole, nSampleRows
 	fileNumLines = -1
-	print "Available files found in folder for selection:"
+	print("Available files found in folder for selection:")
 	listFilesInFolder(-1)
-	print ""
-	iFileName = raw_input("Enter name or number of input file[" + lastFileGenerated + "]: ") or lastFileGenerated
+	print("")
+	iFileName = input("Enter name or number of input file[" + lastFileGenerated + "]: ") or lastFileGenerated
 	# do a quick check that the file is available before starting the loop
 	try:
 		val = int(iFileName)
@@ -370,9 +371,9 @@ def getSourceFileName():
 		source.close()
 		printToConsole = True
 		nSampleRows = 10
-		print ">> Found file " + iFileName
-		print ">> Defaulting to console-print (select p to toggle)"
-		print ">> Type \"m\" for menu if you are unsure which functions are availble."
+		print(">> Found file " + iFileName)
+		print(">> Defaulting to console-print (select p to toggle)")
+		print(">> Type \"m\" for menu if you are unsure which functions are availble.")
 		# extract the file extension and main file name for potential later re-use
 		tempStr = iFileName.split(".")
 		futureFileMain = tempStr[0]
@@ -382,7 +383,7 @@ def getSourceFileName():
 				futureFileMain = futureFileMain + "." + tempStr[i]
 		return iFileName
 	except:
-		print ">> File not found, please provide a valid file name"
+		print(">> File not found, please provide a valid file name")
 		return ""
 
 def listFilesInFolder(requestNumber):
@@ -395,9 +396,9 @@ def listFilesInFolder(requestNumber):
 			return fileName
 		if requestNumber < 0:
 			if fileCounter < 10:
-				print str(fileCounter) + ":  " + fileName
+				print(str(fileCounter) + ":  " + fileName)
 			else:
-				print str(fileCounter) + ": " + fileName
+				print(str(fileCounter) + ": " + fileName)
 	return ""
 
 # functions for outputing stuff to a correctly timestamped file
@@ -405,7 +406,7 @@ def listFilesInFolder(requestNumber):
 def outputString(printStr):
 	global outputFile
 	if printToConsole:
-		print printStr
+		print(printStr)
 	else:
 		outputFile.write(printStr)
 		
@@ -446,16 +447,16 @@ nSampleRows = 10
 # prepare the main filename regexp to identify if this one of our files
 fileNameRegExp = re.compile("[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9][0-9][0-9][0-9][0-9] - ")
 
-print "This is version " + version + " of the file explorer for large file exploation (by bap)"
-print ""
+print("This is version " + version + " of the file explorer for large file exploation (by bap)")
+print("")
 # get a valid file name
 inputFileName = getSourceFileName()
 while inputFileName == "":
 	inputFileName = getSourceFileName()
 # main loop
 while usrInput != "q":
-	print ""
-	usrInput = raw_input("Call function[" + lastUserInput + "]: ") or lastUserInput
+	print("")
+	usrInput = input("Call function[" + lastUserInput + "]: ") or lastUserInput
 	usrInput = usrInput.lower()
 	if usrInput == "h":
 		showHeaderRows()
@@ -476,7 +477,7 @@ while usrInput != "q":
 	elif usrInput == "fx":
 		filterRows(True)
 	elif usrInput == "z":
-		print ">> Current file name: " + inputFileName
+		print(">> Current file name: " + inputFileName)
 	elif usrInput == "s":
 		scanFileForRegExpOrString(False)
 	elif usrInput == "sx":
@@ -494,13 +495,13 @@ while usrInput != "q":
 	elif usrInput == "p":
 		printToConsole = not(printToConsole)
 		if printToConsole:
-			print ">> Printing output to console"
+			print(">> Printing output to console")
 		else:
-			print ">> Printing output to files"
+			print(">> Printing output to files")
 	elif usrInput == "q":
-		print ">> Bye bye"
+		print(">> Bye bye")
 	else:
-		print ">> No such command available, enter 'm' to select menu"
+		print(">> No such command available, enter 'm' to select menu")
 		usrInput = "m"
 	if not(usrInput == "p" or usrInput == "v" or usrInput == "m"):
 		lastUserInput = usrInput
