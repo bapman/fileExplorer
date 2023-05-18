@@ -256,7 +256,16 @@ def scanFileForRegExpOrString(regExpFlag):
 			if searchObj:
 				found = True
 		else:
-			if line.find(oldRegexp) > -1:
+			string_components = oldRegexp.split(",")
+			ctr_all = 0
+			ctr_match = 0
+			for st in string_components:
+				st = st.strip()
+				if st:
+					ctr_all += 1
+					if line.find(st) > -1:
+						ctr_match += 1
+			if ctr_all == ctr_match:
 				found = True
 		if found:
 			counter += 1
